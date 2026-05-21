@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import connectDB from './config/db.js';
-import { default as authRoutes } from './routes/authRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import roomRoutes from './routes/roomsRoutes.js';
 import bookingRoutes from './routes/bookingsRoutes.js';
 
@@ -13,16 +13,21 @@ connectDB();
 
 const app = express();
 
-// 🔹 Core Middlewares
+// ✅ FIXED CORS (NO TRAILING SLASH + FULL SUPPORT)
 app.use(cors({
-  origin: ['http://localhost:5173',
-  "https://studynookclient.vercel.app/"],
+  origin: [
+    "http://localhost:5173",
+    "https://studynookclient.vercel.app"
+  ],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 app.use(express.json());
 app.use(cookieParser());
 
-// 🔹 API Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
