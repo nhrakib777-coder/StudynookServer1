@@ -1,23 +1,41 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1] || req.cookies.token;
+    const bearerToken = req.headers.authorization?.startsWith("Bearer ")
+      ? req.headers.authorization.split(" ")[1]
+      : null;
 
-    if (!token) return res.status(401).json({ message: 'Not authorized' });
+    const cookieToken = req.cookies?.token;
+
+    const token = bearerToken || cookieToken;
+
+    if (!token) {
+      return res.status(401).json({
+        message: "Not authorized, no token provided",
+      });
+    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
 
-    if (!user) return res.status(401).json({ message: 'User not found' });
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        message: "User not found",
+      });
+    }
 
     req.user = user;
     next();
   } catch (err) {
-    return res.status(401).json({ message: 'Not authorized' });
+    console.error("Auth middleware error:", err.message);
+
+    return res.status(401).json({
+      message: "Not authorized, token failed",
+    });
   }
 };
 
-// MUST HAVE THIS DEFAULT EXPORT
 export default auth;

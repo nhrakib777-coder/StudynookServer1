@@ -20,26 +20,27 @@ const allowedOrigins = [
   "https://studynookclient.vercel.app"
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://studynookclient.vercel.app"
+    ];
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-      return callback(new Error("CORS blocked: Not allowed origin"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  })
-);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true
+}));
 
-/* Handle preflight requests */
-app.options("*", cors());
+// FIXED preflight handling
+app.options(/.*/, cors());
+
+
 
 /* ---------------- MIDDLEWARE ---------------- */
 app.use(express.json());
